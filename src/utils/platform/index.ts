@@ -30,7 +30,7 @@ const Static = {
   WIDTH: 0,
   HEIGHT: 0,
   DURATION: 1600,
-  CAMERA_FAR: 9
+  CAMERA_FAR: 200
 };
 
 export class Platform extends EventDispatcher {
@@ -50,12 +50,12 @@ export class Platform extends EventDispatcher {
     this.onResize();
     this.__scene = new Scene();
     this.__camera = new PerspectiveCamera(75, Static.WIDTH / Static.HEIGHT, 0.01, 10000);
-    this.__camera.position.set(0, 0, Static.CAMERA_FAR);
+    this.__camera.position.set(0, 50, Static.CAMERA_FAR);
     this.__renderer = new WebGLRenderer({ canvas, antialias: true });
     this.loaderInit();
     this.__scene.add(
       this.getLights(),
-      this.getBackground(),
+      // this.getBackground(),
       // this.getField()
     );
     window.addEventListener('resize', this.onResize);
@@ -64,17 +64,16 @@ export class Platform extends EventDispatcher {
   getLights() {
     const group = new Group();
     const light0 = new PointLight(0xffffff, 0.6);
-    light0.position.set(0, 9, 0);
+    light0.position.set(0, 90, 0);
     const light1 = new PointLight(0xffffff, 0.6);
-    light1.position.set(0, -9, 0);
     const light2 = new PointLight(0xffffff, 0.6);
-    light2.position.set(12, 0, 0);
+    light2.position.set(90, 0, 0);
     const light3 = new PointLight(0xffffff, 0.6);
-    light3.position.set(-12, 0, 0);
+    light3.position.set(-90, 0, 0);
     const light4 = new PointLight(0xffffff, 0.6);
-    light4.position.set(0, 0, 9);
+    light4.position.set(0, 0, 90);
     const light5 = new PointLight(0xffffff, 0.6);
-    light5.position.set(0, 0, -9);
+    light5.position.set(0, 0, -90);
     group.add(
       new AmbientLight(0xffffff, 1),
       light0,
@@ -119,9 +118,10 @@ export class Platform extends EventDispatcher {
     // this._controls.addEventListener('end', this.onControlEnd); // 拖动摄像机之后还原
     // this._gyro = new DeviceOrientationControls(this.__obj); // 陀螺仪控制物体
 
-    this.changeModel('models/ieee.glb', new Vector3(0,0,0));
-    this.changeModel('models/caa.glb', new Vector3(-10,0,0));
-    this.changeModel('models/itss.glb', new Vector3(0,0,-10));
+    // this.changeModel('models/map-pixel.glb', new Vector3(0,0,0));
+    this.changeModel('models/map-pixel.glb', new Vector3(0,0,0));
+    // this.changeModel('models/caa.glb', new Vector3(-10,0,0));
+    // this.changeModel('models/itss.glb', new Vector3(0,0,-10));
   };
   getField(id:number = 0) {
     const group = new Group();
