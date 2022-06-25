@@ -30,7 +30,7 @@ const Static = {
   WIDTH: 0,
   HEIGHT: 0,
   DURATION: 1600,
-  CAMERA_FAR: 200
+  CAMERA_FAR: 50
 };
 
 export class Platform extends EventDispatcher {
@@ -50,10 +50,12 @@ export class Platform extends EventDispatcher {
     this.onResize();
     this.__scene = new Scene();
     this.__camera = new PerspectiveCamera(75, Static.WIDTH / Static.HEIGHT, 0.01, 10000);
-    this.__camera.position.set(0, 50, Static.CAMERA_FAR);
+    this.__camera.position.set(0, 20, Static.CAMERA_FAR);
+    this.__camera.add(new PointLight(0xffffff, 0.8))
     this.__renderer = new WebGLRenderer({ canvas, antialias: true });
     this.loaderInit();
     this.__scene.add(
+      this.__camera,
       this.getLights(),
       // this.getBackground(),
       // this.getField()
@@ -64,7 +66,7 @@ export class Platform extends EventDispatcher {
   getLights() {
     const group = new Group();
     const light0 = new PointLight(0xffffff, 0.6);
-    light0.position.set(0, 90, 0);
+    light0.position.set(0, 20, 0);
     const light1 = new PointLight(0xffffff, 0.6);
     const light2 = new PointLight(0xffffff, 0.6);
     light2.position.set(90, 0, 0);
@@ -119,21 +121,14 @@ export class Platform extends EventDispatcher {
     // this._gyro = new DeviceOrientationControls(this.__obj); // 陀螺仪控制物体
 
     // this.changeModel('models/map-pixel.glb', new Vector3(0,0,0));
-    this.changeModel('models/map-pixel.glb', new Vector3(0,0,0));
+    this.changeModel('models/macao.glb', new Vector3(0,0,0));
+    const g = this.getField('models/castle.glb');
+    g.position.y = 1;
+    g.position.z = 5;
+    this.__scene.add( g );
     // this.changeModel('models/caa.glb', new Vector3(-10,0,0));
     // this.changeModel('models/itss.glb', new Vector3(0,0,-10));
   };
-  getField(id:number = 0) {
-    const group = new Group();
-    const pie = new Mesh(
-      new CylinderGeometry(5,5,1,100),
-      new MeshBasicMaterial({
-        color: 0xff0000
-      })
-    );
-    group.add(pie);
-    return group;
-  }
   changeModel(url:string, position:Vector3) {
     this._loader.load(url, (gltf:any) => {
       gltf.scene.name = '3dmodel';
@@ -146,6 +141,16 @@ export class Platform extends EventDispatcher {
       const event = { type: EVENT.LOADED, data: gltf };
       this.dispatchEvent(event);  
     }, this.onLoading, this.onLoadErrer);
+  }
+  getField(url:string) {
+    const group = new Group();
+    this._loader.load(url, (gltf:any) => {
+      gltf.scene.name = '3dfield';
+      group.add(gltf.scene);
+      const event = { type: EVENT.LOADED, data: gltf };
+      this.dispatchEvent(event);  
+    }, this.onLoading, this.onLoadErrer);
+    return group;
   }
   getBackground() {
     const group = new Group();
@@ -170,12 +175,12 @@ export class Platform extends EventDispatcher {
     }
   }
   loaderInit() {
-    // const dracoLoader =new DRACOLoader();
+    const dracoLoader =new DRACOLoader();
     this._loader = new GLTFLoader();
-    // dracoLoader.setDecoderPath('./gltfdraco/');
-    // dracoLoader.setDecoderConfig({ type:'js'});
-    // dracoLoader.preload();
-    // this._loader.setDRACOLoader(dracoLoader);
+    dracoLoader.setDecoderPath('./gltfdraco/');
+    dracoLoader.setDecoderConfig({ type:'js'});
+    dracoLoader.preload();
+    this._loader.setDRACOLoader(dracoLoader);
   }
   /**
    * 停止拖动
