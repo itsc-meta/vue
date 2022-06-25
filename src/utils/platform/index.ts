@@ -50,7 +50,7 @@ export class Platform extends EventDispatcher {
     this.onResize();
     this.__scene = new Scene();
     this.__camera = new PerspectiveCamera(75, Static.WIDTH / Static.HEIGHT, 0.01, 10000);
-    this.__camera.position.set(0, 20, Static.CAMERA_FAR);
+    this.__camera.position.set(10, 20, Static.CAMERA_FAR);
     this.__camera.add(new PointLight(0xffffff, 0.8))
     this.__renderer = new WebGLRenderer({ canvas, antialias: true });
     this.loaderInit();
@@ -127,7 +127,7 @@ export class Platform extends EventDispatcher {
     g1.position.y = 1;
     g1.position.z = -25;
     g1.rotation.y = 1;
-    const g2 = this.getField('models/cab.glb');
+    const g2 = this.getField('models/waytous.glb');
     g2.position.y = 1;
     g2.position.z = 1;
     this.__scene.add( g1, g2 );
