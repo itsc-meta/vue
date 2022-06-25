@@ -122,10 +122,15 @@ export class Platform extends EventDispatcher {
 
     // this.changeModel('models/map-pixel.glb', new Vector3(0,0,0));
     this.changeModel('models/macao.glb', new Vector3(0,0,0));
-    const g = this.getField('models/castle.glb');
-    g.position.y = 1;
-    g.position.z = 5;
-    this.__scene.add( g );
+    const g1 = this.getField('models/car.glb');
+    g1.position.x = -10;
+    g1.position.y = 1;
+    g1.position.z = -25;
+    g1.rotation.y = 1;
+    const g2 = this.getField('models/cab.glb');
+    g2.position.y = 1;
+    g2.position.z = 1;
+    this.__scene.add( g1, g2 );
     // this.changeModel('models/caa.glb', new Vector3(-10,0,0));
     // this.changeModel('models/itss.glb', new Vector3(0,0,-10));
   };
