@@ -128,6 +128,7 @@ export class Platform extends EventDispatcher {
     g1.position.z = -25;
     g1.rotation.y = 1;
     const g2 = this.getField('models/waytous.glb');
+    g2.position.x = -5;
     g2.position.y = 1;
     g2.position.z = 1;
     this.__scene.add( g1, g2 );
