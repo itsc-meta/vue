@@ -1,12 +1,11 @@
 import {
   WebGLRenderer, EventDispatcher, PerspectiveCamera,TextureLoader, Scene, Event, Object3D, 
-  BackSide, Mesh, Group, SphereGeometry, Vector3, PointLight, MeshBasicMaterial, AmbientLight, CylinderGeometry
+  BackSide, Mesh, Group, SphereGeometry, Vector3, PointLight, MeshBasicMaterial, AmbientLight, CylinderGeometry, Color, PlaneGeometry, DynamicDrawUsage, RepeatWrapping, Clock, FogExp2, MathUtils, Raycaster
 } from 'three';
-import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
-import { DeviceOrientationControls } from '@/utils/device-orientation-controls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import TWEEN, { Tween, Easing } from '@tweenjs/tween.js';
+import { IBooth } from '@/type/base';
+import { GlbLoader } from './GlbLoader';
 
 /**
  * 版本
@@ -35,30 +34,39 @@ const Static = {
 
 export class Platform extends EventDispatcher {
   _canvas;
-  __camera; // 摄像头
+  __camera:any; // 摄像头
   __scene; // 场景
   // __obj; //
-  // __bg;//
+  __bg; //背景
+  __boothes; // 展位
   __renderer; // 渲染器
   _loader:any = null; // 加载器
   _controls:any = null; // 控制器
-  _gyro:any = null; // 陀螺仪
+  _raycaster:Raycaster;// 射线
+  _clock = new Clock();
 
   constructor(canvas:HTMLCanvasElement) {
     super();
     this._canvas = canvas;
     this.onResize();
     this.__scene = new Scene();
-    this.__camera = new PerspectiveCamera(75, Static.WIDTH / Static.HEIGHT, 0.01, 10000);
-    this.__camera.position.set(10, 20, Static.CAMERA_FAR);
-    this.__camera.add(new PointLight(0xffffff, 0.8))
+    this.__scene.background = new Color(0xaaccff);
+    this.__scene.fog = new FogExp2( 0xaaccff, 0.0007 );
+    this.__camera = new Object3D();
+    const camera = new PerspectiveCamera(75, Static.WIDTH / Static.HEIGHT, 0.01, 10000);
+    camera.position.set(10, 20, Static.CAMERA_FAR);
+    camera.add(new PointLight(0xffffff, 0.8));
+    this.__camera.camera = camera;
+    this.__camera.add(camera);
+    this._raycaster = new Raycaster();
     this.__renderer = new WebGLRenderer({ canvas, antialias: true });
-    this.loaderInit();
+    this.__bg = this.getBackground();
+    this.__boothes = new Group();
     this.__scene.add(
+      this.__bg,
+      this.__boothes,
       this.__camera,
-      this.getLights(),
-      // this.getBackground(),
-      // this.getField()
+      this.getLights()
     );
     window.addEventListener('resize', this.onResize);
     this.animate(0);
@@ -77,7 +85,7 @@ export class Platform extends EventDispatcher {
     const light5 = new PointLight(0xffffff, 0.6);
     light5.position.set(0, 0, -90);
     group.add(
-      new AmbientLight(0xffffff, 1),
+      new AmbientLight(0xffffff, 2),
       light0,
       light1,
       light2,
@@ -100,93 +108,49 @@ export class Platform extends EventDispatcher {
     Static.WIDTH = window.innerWidth;
     Static.HEIGHT = window.innerHeight;
     if(this.__camera) {
-      this.__camera.aspect = Static.WIDTH / Static.HEIGHT;
-      this.__camera.updateProjectionMatrix();
+      this.__camera.camera.aspect = Static.WIDTH / Static.HEIGHT;
+      this.__camera.camera.updateProjectionMatrix();
       this.__renderer.setSize( Static.WIDTH, Static.HEIGHT );
     }
   }
   /**
    * 开始
    */
-  start() {
+  start(boothes:IBooth[]) {
     this.onResize(); // 必须重新定位，否则高度不正确
-    this._controls = new TrackballControls(this.__camera, this.__renderer.domElement); // 拖动摄像机
-    this._controls.rotateSpeed = 1.0;
-    this._controls.zoomSpeed = 1.2;
-    // this._controls.noPan = true;
-    // this._controls.maxDistance = 60;
-    this._controls.panSpeed = 0.8;
-    // this._controls.enablePan = false;
-    // this._controls.addEventListener('end', this.onControlEnd); // 拖动摄像机之后还原
-    // this._gyro = new DeviceOrientationControls(this.__obj); // 陀螺仪控制物体
-
-    // this.changeModel('models/map-pixel.glb', new Vector3(0,0,0));
-    this.changeModel('models/macao.glb', new Vector3(0,0,0));
-    const g1 = this.getField('models/car.glb');
-    g1.position.x = -10;
-    g1.position.y = 1;
-    g1.position.z = -25;
-    g1.rotation.y = 1;
-    const g2 = this.getField('models/waytous.glb');
-    g2.position.x = -5;
-    g2.position.y = 1;
-    g2.position.z = 1;
-    this.__scene.add( g1, g2 );
-    // this.changeModel('models/caa.glb', new Vector3(-10,0,0));
-    // this.changeModel('models/itss.glb', new Vector3(0,0,-10));
-  };
-  changeModel(url:string, position:Vector3) {
-    this._loader.load(url, (gltf:any) => {
-      gltf.scene.name = '3dmodel';
-      const g = new Object3D();
-      g.add(gltf.scene);
-      g.position.x = position.x;
-      g.position.y = position.y;
-      g.position.z = position.z;
-      this.__scene.add(g);
-      const event = { type: EVENT.LOADED, data: gltf };
-      this.dispatchEvent(event);  
-    }, this.onLoading, this.onLoadErrer);
-  }
-  getField(url:string) {
-    const group = new Group();
-    this._loader.load(url, (gltf:any) => {
-      gltf.scene.name = '3dfield';
-      group.add(gltf.scene);
-      const event = { type: EVENT.LOADED, data: gltf };
-      this.dispatchEvent(event);  
-    }, this.onLoading, this.onLoadErrer);
-    return group;
+    this._controls = new OrbitControls(this.__camera.camera, this.__renderer.domElement); // 拖动摄像机
+    this._controls.maxPolarAngle = Math.PI / 2;
+    for(const booth of boothes) {
+      const g = new GlbLoader(booth.url);
+      g.position.x = booth.x;
+      g.position.y = booth.y;
+      g.position.z = booth.z;
+      g.rotateY(MathUtils.degToRad(booth.degree));
+      this.__boothes.add(g);
+    }
   }
   getBackground() {
-    const group = new Group();
-    const background = new Mesh(
-      new SphereGeometry(100,100,100),
-      new MeshBasicMaterial({
-        color: 0x00ff00
-      })
-    );
-    group.add(
-      background
-    );
+    const group:any = new GlbLoader('https://minio.trvqd.com/meta/macao.glb');
+    const worldWidth = 128, worldDepth = 128;
+    const geometry = new PlaneGeometry( 20000, 20000, worldWidth - 1, worldDepth - 1 );
+		geometry.rotateX( - Math.PI / 2 );
+    const position:any = geometry.attributes.position;
+    group.wave = position;
+    const texture = new TextureLoader().load( 'https://minio.trvqd.com/meta/water.jpg' );
+    texture.wrapS = texture.wrapT = RepeatWrapping;
+    texture.repeat.set( 5, 5 );
+		const material = new MeshBasicMaterial( { color: 0x0044ff, map: texture } );
+		group.add(new Mesh( geometry, material ));
     return group;
   }
-  envToModel(texture:any, obj:any) {
-    if(obj.meterial) {
-      obj.meterial.envMap = texture;
-      obj.meterial.needsUpdate = true;
+  cast(x:number, y:number) {
+    this._raycaster.setFromCamera({x, y}, this.__camera.camera);
+    const intersects:any = this._raycaster.intersectObjects(this.__boothes.children, false);
+    if(intersects.length) {
+      const booth = intersects[0];
+      console.log(booth);
+      // this.__camera.position.set(booth.position.x, 0, booth.position.z);
     }
-    if(obj.children.length > 0) {
-      this.envToModel(texture, obj.children[0]);
-    }
-  }
-  loaderInit() {
-    const dracoLoader =new DRACOLoader();
-    this._loader = new GLTFLoader();
-    dracoLoader.setDecoderPath('./gltfdraco/');
-    dracoLoader.setDecoderConfig({ type:'js'});
-    dracoLoader.preload();
-    this._loader.setDRACOLoader(dracoLoader);
   }
   /**
    * 停止拖动
@@ -210,12 +174,30 @@ export class Platform extends EventDispatcher {
   onLoadErrer = (e:Event) => {
     const event = { type: EVENT.LOAD_FAIL, data: e };
     this.dispatchEvent(event);
-  }
+  };
+  /**
+   * 波浪
+   */
+  waving = () => {
+    const delta = this._clock.getDelta();
+		const time = this._clock.getElapsedTime() * 10;
+    const position = this.__bg.wave;
+    for ( let i = 0; i < position.count; i ++ ) {
+      const y = 0.2 * Math.sin( i / 5 + ( time + i ) / 7 );
+      position.setY( i, y );
+    }
+    position.needsUpdate = true;
+  };
+  /**
+   * 动画
+   * @param time 时间
+   */
   animate = (time:number)=> {
     requestAnimationFrame(this.animate);
     if(this._controls) this._controls.update();
+    this.waving();
     TWEEN.update(time);
-    this.__renderer.render(this.__scene, this.__camera);
+    this.__renderer.render(this.__scene, this.__camera.camera);
   }
 }
 
