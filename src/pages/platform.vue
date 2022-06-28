@@ -23,9 +23,9 @@ onMounted(() => {
       {
         name: '慧拓',
         url: 'https://minio.trvqd.com/meta/waytous.glb',
-        x: -5,
+        x: -10,
         y: 1,
-        z: 1,
+        z: 2,
         degree: 0
       },
       {

@@ -2,6 +2,11 @@ import { Group, Raycaster } from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
+export const LOAD_EVENT = {
+  LOADING: 'modelLoading',
+  LOADED: 'modelLoaded',
+  LOAD_FAIL: 'modelLoadFail'
+};
 export class GlbLoader extends Group {
   _loader:GLTFLoader;
   constructor(url:string) {
@@ -21,21 +26,27 @@ export class GlbLoader extends Group {
   onLoad = (gltf:any) => {
     gltf.scene.name = '3dfield';
     this.add(gltf.scene);
-    // const event = { type: EVENT.LOADED, data: gltf };
-    // this.dispatchEvent(event);  
+    const event = { type: LOAD_EVENT.LOADED, data: gltf };
+    this.dispatchEvent(event);  
   };
   /**
    * 加载中
    * @param e 加载过程事件
    * @returns 
    */
-  onLoading = (e:ProgressEvent) => console.log(e);
+  onLoading = (e:ProgressEvent) => {
+    const event = { type: LOAD_EVENT.LOADING, data: e };
+    this.dispatchEvent(event);
+  };
   /**
    * 加载错误
    * @param e 错误事件
    * @returns 
    */
-  onLoadErrer = (e:ErrorEvent) => console.log(e);
+  onLoadErrer = (e:ErrorEvent) => {
+    const event = { type: LOAD_EVENT.LOAD_FAIL, data: e };
+    this.dispatchEvent(event);
+  };
   /**
    * 射线碰撞
    * @param ray 摄像头射线

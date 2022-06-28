@@ -5,7 +5,7 @@ import {
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import TWEEN, { Tween, Easing } from '@tweenjs/tween.js';
 import { IBooth } from '@/type/base';
-import { GlbLoader } from './GlbLoader';
+import { GlbLoader, LOAD_EVENT } from './GlbLoader';
 
 /**
  * 版本
@@ -42,6 +42,7 @@ export class Platform extends EventDispatcher {
   __renderer; // 渲染器
   _loader:any = null; // 加载器
   _controls:any = null; // 控制器
+  _boothes:any;//
   _raycaster:Raycaster;// 射线
   _clock = new Clock();
 
@@ -54,7 +55,7 @@ export class Platform extends EventDispatcher {
     this.__scene.fog = new FogExp2( 0xaaccff, 0.0007 );
     this.__camera = new Object3D();
     const camera = new PerspectiveCamera(75, Static.WIDTH / Static.HEIGHT, 0.01, 10000);
-    camera.position.set(10, 20, Static.CAMERA_FAR);
+    // camera.position.set(10, 20, Static.CAMERA_FAR);
     camera.add(new PointLight(0xffffff, 0.8));
     this.__camera.camera = camera;
     this.__camera.add(camera);
@@ -114,13 +115,34 @@ export class Platform extends EventDispatcher {
     }
   }
   /**
+   * 准备动画
+   */
+  ready() {
+    this.__camera.camera.position.set(0, 100, 0);
+    this.__camera.camera.lookAt(new Vector3(0,0,0));
+    const t = new Tween(this.__camera.camera.position).to(new Vector3(0,20,20), Static.DURATION);
+    t.onUpdate((e) => {
+      this.__camera.camera.lookAt(new Vector3(0,0,0));
+    });
+    t.onComplete(() => {
+      this.boothInit();
+    })
+    t.start();
+  }
+  /**
    * 开始
    */
   start(boothes:IBooth[]) {
     this.onResize(); // 必须重新定位，否则高度不正确
+    this._boothes = boothes;
+  }
+  /**
+   * 展位初始化
+   */
+  boothInit(){
     this._controls = new OrbitControls(this.__camera.camera, this.__renderer.domElement); // 拖动摄像机
     this._controls.maxPolarAngle = Math.PI / 2;
-    for(const booth of boothes) {
+    for(const booth of this._boothes) {
       const g = new GlbLoader(booth.url);
       g.position.x = booth.x;
       g.position.y = booth.y;
@@ -129,8 +151,12 @@ export class Platform extends EventDispatcher {
       this.__boothes.add(g);
     }
   }
+  /**
+   * 获得背景
+   */
   getBackground() {
     const group:any = new GlbLoader('https://minio.trvqd.com/meta/macao.glb');
+    group.addEventListener(LOAD_EVENT.LOADED, ()=> this.ready());
     const worldWidth = 128, worldDepth = 128;
     const geometry = new PlaneGeometry( 20000, 20000, worldWidth - 1, worldDepth - 1 );
 		geometry.rotateX( - Math.PI / 2 );
@@ -143,6 +169,11 @@ export class Platform extends EventDispatcher {
 		group.add(new Mesh( geometry, material ));
     return group;
   }
+  /**
+   * 投射
+   * @param x 横坐标
+   * @param y 纵坐标
+   */
   cast(x:number, y:number) {
     this._raycaster.setFromCamera({x, y}, this.__camera.camera);
     const intersects:any = this._raycaster.intersectObjects(this.__boothes.children, false);
