@@ -34,7 +34,7 @@ const Static = {
 
 export class Platform extends EventDispatcher {
   _canvas;
-  __camera:any; // 摄像头
+  __camera:PerspectiveCamera; // 摄像头
   __scene; // 场景
   // __obj; //
   __bg; //背景
@@ -53,12 +53,8 @@ export class Platform extends EventDispatcher {
     this.__scene = new Scene();
     this.__scene.background = new Color(0xaaccff);
     this.__scene.fog = new FogExp2( 0xaaccff, 0.0007 );
-    this.__camera = new Object3D();
-    const camera = new PerspectiveCamera(75, Static.WIDTH / Static.HEIGHT, 0.01, 10000);
-    // camera.position.set(10, 20, Static.CAMERA_FAR);
-    camera.add(new PointLight(0xffffff, 0.8));
-    this.__camera.camera = camera;
-    this.__camera.add(camera);
+    this.__camera = new PerspectiveCamera(75, Static.WIDTH / Static.HEIGHT, 1, 10000);
+    this.__camera.add(new PointLight(0xffffff, 1));
     this._raycaster = new Raycaster();
     this.__renderer = new WebGLRenderer({ canvas, antialias: true });
     this.__bg = this.getBackground();
@@ -109,8 +105,8 @@ export class Platform extends EventDispatcher {
     Static.WIDTH = window.innerWidth;
     Static.HEIGHT = window.innerHeight;
     if(this.__camera) {
-      this.__camera.camera.aspect = Static.WIDTH / Static.HEIGHT;
-      this.__camera.camera.updateProjectionMatrix();
+      this.__camera.aspect = Static.WIDTH / Static.HEIGHT;
+      this.__camera.updateProjectionMatrix();
       this.__renderer.setSize( Static.WIDTH, Static.HEIGHT );
     }
   }
@@ -118,11 +114,11 @@ export class Platform extends EventDispatcher {
    * 准备动画
    */
   ready() {
-    this.__camera.camera.position.set(0, 100, 0);
-    this.__camera.camera.lookAt(new Vector3(0,0,0));
-    const t = new Tween(this.__camera.camera.position).to(new Vector3(0,20,20), Static.DURATION);
+    this.__camera.position.set(0, 100, 0);
+    this.__camera.lookAt(new Vector3(0,0,0));
+    const t = new Tween(this.__camera.position).to(new Vector3(0,20,20), Static.DURATION);
     t.onUpdate((e) => {
-      this.__camera.camera.lookAt(new Vector3(0,0,0));
+      this.__camera.lookAt(new Vector3(0,0,0));
     });
     t.onComplete(() => {
       this.boothInit();
@@ -140,13 +136,13 @@ export class Platform extends EventDispatcher {
    * 展位初始化
    */
   boothInit(){
-    this._controls = new OrbitControls(this.__camera.camera, this.__renderer.domElement); // 拖动摄像机
-    this._controls.maxPolarAngle = Math.PI / 2;
+    this._controls = new OrbitControls(this.__camera, this.__renderer.domElement); // 拖动摄像机
+    this._controls.maxPolarAngle = MathUtils.degToRad(85);
     for(const booth of this._boothes) {
       const g = new GlbLoader(booth.url);
       g.position.x = booth.x;
-      g.position.y = booth.y;
-      g.position.z = booth.z;
+      g.position.y = booth.z;
+      g.position.z = booth.y;
       g.rotateY(MathUtils.degToRad(booth.degree));
       this.__boothes.add(g);
     }
@@ -157,14 +153,14 @@ export class Platform extends EventDispatcher {
   getBackground() {
     const group:any = new GlbLoader('https://minio.trvqd.com/meta/macao.glb');
     group.addEventListener(LOAD_EVENT.LOADED, ()=> this.ready());
-    const worldWidth = 128, worldDepth = 128;
+    const worldWidth = 512, worldDepth = 512;
     const geometry = new PlaneGeometry( 20000, 20000, worldWidth - 1, worldDepth - 1 );
 		geometry.rotateX( - Math.PI / 2 );
     const position:any = geometry.attributes.position;
     group.wave = position;
     const texture = new TextureLoader().load( 'https://minio.trvqd.com/meta/water.jpg' );
     texture.wrapS = texture.wrapT = RepeatWrapping;
-    texture.repeat.set( 5, 5 );
+    texture.repeat.set( 10, 10 );
 		const material = new MeshBasicMaterial( { color: 0x0044ff, map: texture } );
 		group.add(new Mesh( geometry, material ));
     return group;
@@ -175,12 +171,14 @@ export class Platform extends EventDispatcher {
    * @param y 纵坐标
    */
   cast(x:number, y:number) {
-    this._raycaster.setFromCamera({x, y}, this.__camera.camera);
+    this._raycaster.setFromCamera({x, y}, this.__camera);
     const intersects:any = this._raycaster.intersectObjects(this.__boothes.children, false);
     if(intersects.length) {
       const booth = intersects[0];
-      console.log(booth);
-      // this.__camera.position.set(booth.position.x, 0, booth.position.z);
+      const v = this._controls.object.position.clone();
+      v.add(booth.position.clone().sub(this._controls.target));
+      new Tween(this._controls.target).to( booth.position, Static.DURATION).easing(Easing.Quadratic.In).start();
+      new Tween(this._controls.object.position).to( v, Static.DURATION).easing(Easing.Quadratic.In).start();
     }
   }
   /**
@@ -228,7 +226,7 @@ export class Platform extends EventDispatcher {
     if(this._controls) this._controls.update();
     this.waving();
     TWEEN.update(time);
-    this.__renderer.render(this.__scene, this.__camera.camera);
+    this.__renderer.render(this.__scene, this.__camera);
   }
 }
 

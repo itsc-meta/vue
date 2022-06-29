@@ -24,17 +24,25 @@ onMounted(() => {
         name: '慧拓',
         url: 'https://minio.trvqd.com/meta/waytous.glb',
         x: -10,
-        y: 1,
-        z: 2,
+        y: 2,
+        z: 1,
         degree: 0
       },
       {
         name: '慧拓',
         url: 'https://minio.trvqd.com/meta/waytous.glb',
         x: -5,
-        y: 1,
-        z: -50,
+        y: -50,
+        z: 1,
         degree: 90
+      },
+      {
+        name: '慧拓',
+        url: 'https://minio.trvqd.com/meta/waytous.glb',
+        x: 35,
+        y: 20,
+        z: 1,
+        degree: -70
       }
     ]
     platform.start(boothes);
