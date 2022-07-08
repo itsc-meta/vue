@@ -54,7 +54,7 @@ export class Platform extends EventDispatcher {
     this.__scene.background = new Color(0xaaccff);
     this.__scene.fog = new FogExp2( 0xaaccff, 0.0007 );
     this.__camera = new PerspectiveCamera(75, Static.WIDTH / Static.HEIGHT, 1, 10000);
-    this.__camera.add(new PointLight(0xffffff, 1));
+    // this.__camera.add(new PointLight(0xffffff, 1));
     this._raycaster = new Raycaster();
     this.__renderer = new WebGLRenderer({ canvas, antialias: true });
     this.__bg = this.getBackground();
@@ -62,35 +62,10 @@ export class Platform extends EventDispatcher {
     this.__scene.add(
       this.__bg,
       this.__boothes,
-      this.__camera,
-      this.getLights()
+      this.__camera
     );
     window.addEventListener('resize', this.onResize);
     this.animate(0);
-  }
-  getLights() {
-    const group = new Group();
-    const light0 = new PointLight(0xffffff, 0.6);
-    light0.position.set(0, 20, 0);
-    const light1 = new PointLight(0xffffff, 0.6);
-    const light2 = new PointLight(0xffffff, 0.6);
-    light2.position.set(90, 0, 0);
-    const light3 = new PointLight(0xffffff, 0.6);
-    light3.position.set(-90, 0, 0);
-    const light4 = new PointLight(0xffffff, 0.6);
-    light4.position.set(0, 0, 90);
-    const light5 = new PointLight(0xffffff, 0.6);
-    light5.position.set(0, 0, -90);
-    group.add(
-      new AmbientLight(0xffffff, 2),
-      light0,
-      light1,
-      light2,
-      light3,
-      light4,
-      light5,
-    );
-    return group;
   }
   /**
    * 尺寸重置
@@ -152,6 +127,7 @@ export class Platform extends EventDispatcher {
    */
   getBackground() {
     const group:any = new GlbLoader('https://minio.trvqd.com/meta/macao.glb');
+    // const group:any = new GlbLoader('models/macao.glb');
     group.addEventListener(LOAD_EVENT.LOADED, ()=> this.ready());
     const worldWidth = 512, worldDepth = 512;
     const geometry = new PlaneGeometry( 20000, 20000, worldWidth - 1, worldDepth - 1 );
@@ -162,7 +138,7 @@ export class Platform extends EventDispatcher {
     texture.wrapS = texture.wrapT = RepeatWrapping;
     texture.repeat.set( 10, 10 );
 		const material = new MeshBasicMaterial( { color: 0x0044ff, map: texture } );
-		group.add(new Mesh( geometry, material ));
+		// group.add(new Mesh( geometry, material ));
     return group;
   }
   /**
