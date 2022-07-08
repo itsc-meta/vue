@@ -138,7 +138,7 @@ export class Platform extends EventDispatcher {
     texture.wrapS = texture.wrapT = RepeatWrapping;
     texture.repeat.set( 10, 10 );
 		const material = new MeshBasicMaterial( { color: 0x0044ff, map: texture } );
-		// group.add(new Mesh( geometry, material ));
+		group.add(new Mesh( geometry, material ));
     return group;
   }
   /**
