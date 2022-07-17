@@ -9,11 +9,22 @@ export enum MODEL_STATUS {
   executing // 执行中
 }
 
-export interface IBooth {
+/**
+ * 模型
+ */
+export interface IModel {
   name: string,
   url: string,
   x: number,
   y: number,
   z: number,
-  degree: number
+  degree?: number
+}
+
+/**
+ * 配置
+ */
+export interface IConfig {
+  bg: IModel,
+  boothes: IModel[]
 }

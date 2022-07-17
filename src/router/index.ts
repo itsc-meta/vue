@@ -1,16 +1,15 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import NotFound from '@/pages/404.vue';
 import Platform from '@/pages/platform.vue';
-import { Fields } from '@/utils';
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/platform'
+    redirect: `/a`
   },
   {
     name: 'platform',
-    path: '/platform',
+    path: '/:id',
     component: Platform,
     props: true,
     meta: { title: 'model' }

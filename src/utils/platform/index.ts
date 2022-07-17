@@ -4,8 +4,9 @@ import {
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import TWEEN, { Tween, Easing } from '@tweenjs/tween.js';
-import { IBooth } from '@/type/base';
+import { IConfig } from '@/type/base';
 import { GlbLoader, LOAD_EVENT } from './GlbLoader';
+import axios from 'axios';
 
 /**
  * 版本
@@ -42,7 +43,7 @@ export class Platform extends EventDispatcher {
   __renderer; // 渲染器
   _loader:any = null; // 加载器
   _controls:any = null; // 控制器
-  _boothes:any;//
+  _config:any;// 配置信息
   _raycaster:Raycaster;// 射线
   _clock = new Clock();
 
@@ -57,7 +58,7 @@ export class Platform extends EventDispatcher {
     // this.__camera.add(new PointLight(0xffffff, 1));
     this._raycaster = new Raycaster();
     this.__renderer = new WebGLRenderer({ canvas, antialias: true });
-    this.__bg = this.getBackground();
+    this.__bg = new Group();
     this.__boothes = new Group();
     this.__scene.add(
       this.__bg,
@@ -103,9 +104,16 @@ export class Platform extends EventDispatcher {
   /**
    * 开始
    */
-  start(boothes:IBooth[]) {
+  start(id:string) {
     this.onResize(); // 必须重新定位，否则高度不正确
-    this._boothes = boothes;
+    axios.get(`https://minio.trvqd.com/meta/${id}.json`)
+    .then((response) => {
+      this._config = response.data;
+      this.setBackground();
+    })
+    .catch((error) => {
+      console.log(error);
+    }); 
   }
   /**
    * 展位初始化
@@ -113,7 +121,7 @@ export class Platform extends EventDispatcher {
   boothInit(){
     this._controls = new OrbitControls(this.__camera, this.__renderer.domElement); // 拖动摄像机
     this._controls.maxPolarAngle = MathUtils.degToRad(85);
-    for(const booth of this._boothes) {
+    for(const booth of this._config.boothes) {
       const g = new GlbLoader(booth.url);
       g.position.x = booth.x;
       g.position.y = booth.z;
@@ -122,12 +130,24 @@ export class Platform extends EventDispatcher {
       this.__boothes.add(g);
     }
   }
+  setBackground() {
+    const group:any = new GlbLoader(this._config.bg.url);
+    group.addEventListener(LOAD_EVENT.LOADING, (e:any)=> {
+      this.onLoading(e.data);
+    });
+    group.addEventListener(LOAD_EVENT.LOADED, (e:any)=> {
+      this.onLoaded(e);
+      this.ready();
+    });
+    this.__bg.clear();
+    this.__bg.add(group);
+  }
   /**
    * 获得背景
    */
   getBackground() {
-    const group:any = new GlbLoader('https://minio.trvqd.com/meta/macao.glb');
-    // const group:any = new GlbLoader('models/macao.glb');
+    // const group:any = new GlbLoader('https://minio.trvqd.com/meta/macao.glb');
+    const group:any = new GlbLoader('models/macao.glb');
     group.addEventListener(LOAD_EVENT.LOADED, ()=> this.ready());
     const worldWidth = 512, worldDepth = 512;
     const geometry = new PlaneGeometry( 20000, 20000, worldWidth - 1, worldDepth - 1 );
@@ -168,8 +188,16 @@ export class Platform extends EventDispatcher {
    * 模型加载中
    * @param e 事件
    */
-  onLoading = (e:Event) => {
+   onLoading = (e:Event) => {
     const event = { type: EVENT.LOADING, data: e };
+    this.dispatchEvent(event);
+  }
+  /**
+   * 模型加载完毕
+   * @param e 事件
+   */
+   onLoaded = (e:Event) => {
+    const event = { type: EVENT.LOADED};
     this.dispatchEvent(event);
   }
   /**
@@ -183,16 +211,16 @@ export class Platform extends EventDispatcher {
   /**
    * 波浪
    */
-  waving = () => {
-    const delta = this._clock.getDelta();
-		const time = this._clock.getElapsedTime() * 10;
-    const position = this.__bg.wave;
-    for ( let i = 0; i < position.count; i ++ ) {
-      const y = 0.2 * Math.sin( i / 5 + ( time + i ) / 7 );
-      position.setY( i, y );
-    }
-    position.needsUpdate = true;
-  };
+  // waving = () => {
+  //   const delta = this._clock.getDelta();
+	// 	const time = this._clock.getElapsedTime() * 10;
+  //   const position = this.__bg.wave;
+  //   for ( let i = 0; i < position.count; i ++ ) {
+  //     const y = 0.2 * Math.sin( i / 5 + ( time + i ) / 7 );
+  //     position.setY( i, y );
+  //   }
+  //   position.needsUpdate = true;
+  // };
   /**
    * 动画
    * @param time 时间
@@ -200,7 +228,7 @@ export class Platform extends EventDispatcher {
   animate = (time:number)=> {
     requestAnimationFrame(this.animate);
     if(this._controls) this._controls.update();
-    this.waving();
+    // this.waving();
     TWEEN.update(time);
     this.__renderer.render(this.__scene, this.__camera);
   }
