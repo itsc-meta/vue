@@ -1,13 +1,14 @@
-import { Group, Raycaster } from "three";
+import { Object3D, Raycaster, AnimationMixer } from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
 export const LOAD_EVENT = {
   LOADING: 'modelLoading',
+  ANIMATION: 'modelAnimation',
   LOADED: 'modelLoaded',
   LOAD_FAIL: 'modelLoadFail'
 };
-export class GlbLoader extends Group {
+export class GlbLoader extends Object3D {
   _loader:GLTFLoader;
   constructor(url:string) {
     super();
@@ -24,8 +25,24 @@ export class GlbLoader extends Group {
    * @param gltf glb模型
    */
   onLoad = (gltf:any) => {
-    gltf.scene.name = '3dfield';
-    this.add(gltf.scene);
+    const model = gltf.scene;
+    const animations = gltf.animations;
+    if(animations.length > 0) {
+      const mixer = new AnimationMixer( model );
+      animations.forEach((animation:any) => {
+        mixer.clipAction( animation ).play();        
+      });
+      this.dispatchEvent({ type: LOAD_EVENT.ANIMATION, data: mixer });
+    }
+    console.log(animations);
+    model.name = '3dfield';
+    model.traverse( ( object:any ) => {
+      if ( object.isMesh ) {
+        object.castShadow = true;
+        object.receiveShadow = true;
+      }
+    });
+    this.add(model);
     const event = { type: LOAD_EVENT.LOADED, data: gltf };
     this.dispatchEvent(event);  
   };

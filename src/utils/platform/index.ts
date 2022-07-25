@@ -1,6 +1,6 @@
 import {
-  WebGLRenderer, EventDispatcher, PerspectiveCamera,TextureLoader, Scene, Event, Object3D, 
-  BackSide, Mesh, Group, SphereGeometry, Vector3, PointLight, MeshBasicMaterial, AmbientLight, CylinderGeometry, Color, PlaneGeometry, DynamicDrawUsage, RepeatWrapping, Clock, FogExp2, MathUtils, Raycaster
+  WebGLRenderer, EventDispatcher, PerspectiveCamera,TextureLoader, Scene, Event, Object3D, AnimationMixer,
+  BackSide, Mesh, Group, sRGBEncoding, Vector3, PointLight, AmbientLight, Color, DynamicDrawUsage, RepeatWrapping, Clock, FogExp2, MathUtils, Raycaster
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import TWEEN, { Tween, Easing } from '@tweenjs/tween.js';
@@ -45,6 +45,7 @@ export class Platform extends EventDispatcher {
   _controls:any = null; // 控制器
   _config:any;// 配置信息
   _raycaster:Raycaster;// 射线
+  _mixers:AnimationMixer[] = []; // 动画
   _clock = new Clock();
 
   constructor(canvas:HTMLCanvasElement) {
@@ -58,6 +59,8 @@ export class Platform extends EventDispatcher {
     // this.__camera.add(new PointLight(0xffffff, 1));
     this._raycaster = new Raycaster();
     this.__renderer = new WebGLRenderer({ canvas, antialias: true });
+    this.__renderer.outputEncoding = sRGBEncoding;
+		this.__renderer.shadowMap.enabled = true;
     this.__bg = new Group();
     this.__boothes = new Group();
     this.__scene.add(
@@ -123,6 +126,9 @@ export class Platform extends EventDispatcher {
     this._controls.maxPolarAngle = MathUtils.degToRad(85);
     for(const booth of this._config.boothes) {
       const g = new GlbLoader(booth.url);
+      g.addEventListener(LOAD_EVENT.ANIMATION, e => {
+        this._mixers.push(e.data);
+      });
       g.position.x = booth.x;
       g.position.y = booth.z;
       g.position.z = booth.y;
@@ -149,16 +155,17 @@ export class Platform extends EventDispatcher {
     // const group:any = new GlbLoader('https://minio.trvqd.com/meta/macao.glb');
     const group:any = new GlbLoader('models/macao.glb');
     group.addEventListener(LOAD_EVENT.LOADED, ()=> this.ready());
-    const worldWidth = 512, worldDepth = 512;
-    const geometry = new PlaneGeometry( 20000, 20000, worldWidth - 1, worldDepth - 1 );
-		geometry.rotateX( - Math.PI / 2 );
-    const position:any = geometry.attributes.position;
-    group.wave = position;
-    const texture = new TextureLoader().load( 'https://minio.trvqd.com/meta/water.jpg' );
-    texture.wrapS = texture.wrapT = RepeatWrapping;
-    texture.repeat.set( 10, 10 );
-		const material = new MeshBasicMaterial( { color: 0x0044ff, map: texture } );
-		group.add(new Mesh( geometry, material ));
+    group.scale = new Vector3(2,2,2);
+    // const worldWidth = 512, worldDepth = 512;
+    // const geometry = new PlaneGeometry( 20000, 20000, worldWidth - 1, worldDepth - 1 );
+		// geometry.rotateX( - Math.PI / 2 );
+    // const position:any = geometry.attributes.position;
+    // group.wave = position;
+    // const texture = new TextureLoader().load( 'https://minio.trvqd.com/meta/water.jpg' );
+    // texture.wrapS = texture.wrapT = RepeatWrapping;
+    // texture.repeat.set( 10, 10 );
+		// const material = new MeshBasicMaterial( { color: 0x0044ff, map: texture } );
+		// group.add(new Mesh( geometry, material ));
     return group;
   }
   /**
@@ -221,6 +228,12 @@ export class Platform extends EventDispatcher {
   //   }
   //   position.needsUpdate = true;
   // };
+  modelAnimate = () => {
+    const delta = this._clock.getDelta();
+    this._mixers.forEach(mixer => {
+      mixer.update( delta );
+    })
+  }
   /**
    * 动画
    * @param time 时间
@@ -229,6 +242,7 @@ export class Platform extends EventDispatcher {
     requestAnimationFrame(this.animate);
     if(this._controls) this._controls.update();
     // this.waving();
+    this.modelAnimate();
     TWEEN.update(time);
     this.__renderer.render(this.__scene, this.__camera);
   }
