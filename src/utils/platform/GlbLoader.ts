@@ -1,4 +1,4 @@
-import { Object3D, Raycaster, AnimationMixer } from "three";
+import { Object3D, Raycaster, AnimationMixer, Mesh, Matrix4, Ray, FrontSide, BackSide } from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
@@ -9,7 +9,7 @@ export const LOAD_EVENT = {
   LOAD_FAIL: 'modelLoadFail'
 };
 export class GlbLoader extends Object3D {
-  _loader:GLTFLoader;
+  _loader:GLTFLoader; //加载器
   constructor(url:string) {
     super();
     const dracoLoader =new DRACOLoader();
@@ -34,12 +34,16 @@ export class GlbLoader extends Object3D {
       });
       this.dispatchEvent({ type: LOAD_EVENT.ANIMATION, data: mixer });
     }
-    console.log(animations);
     model.name = '3dfield';
     model.traverse( ( object:any ) => {
       if ( object.isMesh ) {
         object.castShadow = true;
         object.receiveShadow = true;
+        object.material.side = FrontSide;
+      }
+      if ( object.isLight ) {
+        object.visible = false;
+        // object.castShadow = true;
       }
     });
     this.add(model);
@@ -69,10 +73,24 @@ export class GlbLoader extends Object3D {
    * @param ray 摄像头射线
    * @param arr 碰撞内容
    */
-  raycast = (ray:Raycaster, arr:any) => {
-    if(ray.ray.distanceToPoint(this.position) < 3){
-      arr.push(this);
-    }
+  raycast = (raycaster:Raycaster, arr:any) => {
+    // if(ray.ray.distanceToPoint(this.position) < 3){
+    //   arr.push(this);
+    // }
+    const matrix = new Matrix4()
+    matrix.copy(this.matrixWorld).invert();
+    const ray = new Ray();
+    ray.copy(raycaster.ray).applyMatrix4(matrix);
+    this.traverse( ( object ) => {
+      const mesh:Mesh = object as Mesh;
+      if ( mesh.isMesh && mesh.geometry.boundingBox) {
+        // console.log(mesh)
+        if(ray.intersectsBox(mesh.geometry.boundingBox)) {
+          arr.push(this);
+          return;
+        }
+      }
+    });
     // console.log(ray.ray.distanceToPoint(this.position));
   };
 }

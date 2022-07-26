@@ -1,6 +1,7 @@
 import {
   WebGLRenderer, EventDispatcher, PerspectiveCamera,TextureLoader, Scene, Event, Object3D, AnimationMixer,
-  BackSide, Mesh, Group, sRGBEncoding, Vector3, PointLight, AmbientLight, Color, DynamicDrawUsage, RepeatWrapping, Clock, FogExp2, MathUtils, Raycaster
+  sRGBEncoding, PCFSoftShadowMap,
+  BackSide, Mesh, Group, Vector3, PointLight, AmbientLight, Color, DynamicDrawUsage, RepeatWrapping, Clock, FogExp2, MathUtils, Raycaster
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import TWEEN, { Tween, Easing } from '@tweenjs/tween.js';
@@ -56,16 +57,20 @@ export class Platform extends EventDispatcher {
     this.__scene.background = new Color(0xaaccff);
     this.__scene.fog = new FogExp2( 0xaaccff, 0.0007 );
     this.__camera = new PerspectiveCamera(75, Static.WIDTH / Static.HEIGHT, 1, 10000);
-    // this.__camera.add(new PointLight(0xffffff, 1));
+    const light = new PointLight(0xffffff, 1);
+    light.castShadow = true;
+    this.__camera.add(light);
     this._raycaster = new Raycaster();
     this.__renderer = new WebGLRenderer({ canvas, antialias: true });
     this.__renderer.outputEncoding = sRGBEncoding;
 		this.__renderer.shadowMap.enabled = true;
+    this.__renderer.shadowMap.type = PCFSoftShadowMap;
     this.__bg = new Group();
     this.__boothes = new Group();
     this.__scene.add(
       this.__bg,
       this.__boothes,
+      this.getLights(),
       this.__camera
     );
     window.addEventListener('resize', this.onResize);
@@ -138,6 +143,7 @@ export class Platform extends EventDispatcher {
   }
   setBackground() {
     const group:any = new GlbLoader(this._config.bg.url);
+    // const group:any = new GlbLoader('./macao.glb');
     group.addEventListener(LOAD_EVENT.LOADING, (e:any)=> {
       this.onLoading(e.data);
     });
@@ -166,6 +172,16 @@ export class Platform extends EventDispatcher {
     // texture.repeat.set( 10, 10 );
 		// const material = new MeshBasicMaterial( { color: 0x0044ff, map: texture } );
 		// group.add(new Mesh( geometry, material ));
+    return group;
+  }
+  getLights() {
+    const group = new Group();
+    const sun = new PointLight(0xffffff);
+    sun.castShadow = true;
+    sun.position.set(0, 50, 0);
+    group.add(
+      sun
+    );
     return group;
   }
   /**
