@@ -98,9 +98,9 @@ export class Platform extends EventDispatcher {
    * 准备动画
    */
   ready() {
-    this.__camera.position.set(0, 100, 0);
+    this.__camera.position.set(0, 200, 0);
     this.__camera.lookAt(new Vector3(0,0,0));
-    const t = new Tween(this.__camera.position).to(new Vector3(0,20,20), Static.DURATION);
+    const t = new Tween(this.__camera.position).to(new Vector3(0,40,40), Static.DURATION);
     t.onUpdate((e) => {
       this.__camera.lookAt(new Vector3(0,0,0));
     });
