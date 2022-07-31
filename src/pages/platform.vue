@@ -1,54 +1,60 @@
 <template>
-  <div class="model-loader">
-    <div v-if="isLoading" class="msg">{{msg}}</div>
+  <div class="platform">
+    <div v-if="isLoading" class="msg">{{loadingMsg}}</div>
     <canvas ref="canvas" width="500" height="500" style="width:100%" @click="onCast"></canvas>
+    <div class="dialog">
+      <div class="dialog-content">{{boothContent}}</div>
+      <div class="dialog-secretary">
+        <img src="@/assets/images/secretary.png" />
+      </div>
+    </div>
   </div>
 </template>
 <script setup lang="ts">
 import { usePlatform } from '@/store';
 import { computed, onMounted, ref, watch } from 'vue';
-import { Platform, EVENT } from '@/utils/platform'
 const props = defineProps({
   id: String
 });
 const store = usePlatform();
 const canvas = ref<HTMLCanvasElement>();
-let platform:any;
 function onCast(e:MouseEvent) {
   const x = ( e.clientX / window.innerWidth ) * 2 - 1;
 	const y = - ( e.clientY / window.innerHeight ) * 2 + 1;
-  platform.cast(x, y);
+  store.cast(x, y);
 }
-const msg = ref('');
-const isLoading = ref(false);
-function onLoading (e:any) {
-  isLoading.value = true;
-  const { data } = e;
-  const per = data.loaded / data.total;
-  msg.value = `loading:${Math.floor(per * 1000) / 10}%`;
-}
-function onLoaded(e:Event) {
-  isLoading.value = false;
-}
+const isLoading = computed(() => store.isLoading);
+const loadingMsg = computed(() => store.loadingMsg);
+const boothContent = computed(() => store.boothContent);
 
 onMounted(() => {
   if(canvas.value) {
-    platform = new Platform(canvas.value);
-    platform.addEventListener(EVENT.LOADING, onLoading);
-    platform.addEventListener(EVENT.LOADED, onLoaded);
-    platform.start(props.id);
+    store.freight(canvas.value); // 装载canvas
+    store.start(props.id||''); // 按照config开始执行
   }
 });
 watch(() => props.id, (val, old) => {
-  platform.start(val);
+  store.start(val||''); // config修改
 });
 </script>
 
 <style scoped lang="scss">
-.model-loader {
+.platform {
   .msg {
     background-color: white;
     position: fixed;
+  }
+  .dialog {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    background-color: rgba($color: #000000, $alpha: 0.1);
+    display: flex;
+    flex-direction: row;
+    &-content {
+      padding: 1em;
+      color: #FFF;
+    }
   }
 }
 

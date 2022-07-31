@@ -14,6 +14,7 @@ export enum MODEL_STATUS {
  */
 export interface IModel {
   name: string,
+  content: string,
   url: string,
   x: number,
   y: number,

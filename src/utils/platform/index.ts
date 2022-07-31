@@ -35,13 +35,13 @@ const Static = {
 };
 
 export class Platform extends EventDispatcher {
-  _canvas;
+  _canvas:any = null;
   __camera:PerspectiveCamera; // 摄像头
-  __scene; // 场景
+  __scene:Scene; // 场景
   // __obj; //
-  __bg; //背景
-  __boothes; // 展位
-  __renderer; // 渲染器
+  __bg:Group; //背景
+  __boothes:Group; // 展位
+  __renderer:any = null; // 渲染器
   _loader:any = null; // 加载器
   _controls:any = null; // 控制器
   _config:any;// 配置信息
@@ -49,10 +49,8 @@ export class Platform extends EventDispatcher {
   _mixers:AnimationMixer[] = []; // 动画
   _clock = new Clock();
 
-  constructor(canvas:HTMLCanvasElement) {
+  constructor() {
     super();
-    this._canvas = canvas;
-    this.onResize();
     this.__scene = new Scene();
     this.__scene.background = new Color(0xaaccff);
     this.__scene.fog = new FogExp2( 0xaaccff, 0.0007 );
@@ -61,10 +59,6 @@ export class Platform extends EventDispatcher {
     light.castShadow = true;
     this.__camera.add(light);
     this._raycaster = new Raycaster();
-    this.__renderer = new WebGLRenderer({ canvas, antialias: true });
-    this.__renderer.outputEncoding = sRGBEncoding;
-		this.__renderer.shadowMap.enabled = true;
-    this.__renderer.shadowMap.type = PCFSoftShadowMap;
     this.__bg = new Group();
     this.__boothes = new Group();
     this.__scene.add(
@@ -73,7 +67,19 @@ export class Platform extends EventDispatcher {
       this.getLights(),
       this.__camera
     );
+  }
+  /**
+   * 装载
+   * @param canvas 元素
+   */
+  freight(canvas:HTMLCanvasElement) {
+    this._canvas = canvas;
+    this.__renderer = new WebGLRenderer({ canvas, antialias: true });
+    this.__renderer.outputEncoding = sRGBEncoding;
+		this.__renderer.shadowMap.enabled = true;
+    this.__renderer.shadowMap.type = PCFSoftShadowMap;
     window.addEventListener('resize', this.onResize);
+    this.onResize();
     this.animate(0);
   }
   /**
@@ -127,10 +133,11 @@ export class Platform extends EventDispatcher {
    * 展位初始化
    */
   boothInit(){
+    this.__boothes.clear();
     this._controls = new OrbitControls(this.__camera, this.__renderer.domElement); // 拖动摄像机
     this._controls.maxPolarAngle = MathUtils.degToRad(85);
     for(const booth of this._config.boothes) {
-      const g = new GlbLoader(booth.url);
+      const g = new GlbLoader(booth);
       g.addEventListener(LOAD_EVENT.ANIMATION, e => {
         this._mixers.push(e.data);
       });
@@ -142,7 +149,7 @@ export class Platform extends EventDispatcher {
     }
   }
   setBackground() {
-    const group:any = new GlbLoader(this._config.bg.url);
+    const group:any = new GlbLoader(this._config.bg);
     // const group:any = new GlbLoader('./macao.glb');
     group.addEventListener(LOAD_EVENT.LOADING, (e:any)=> {
       this.onLoading(e.data);
@@ -153,26 +160,6 @@ export class Platform extends EventDispatcher {
     });
     this.__bg.clear();
     this.__bg.add(group);
-  }
-  /**
-   * 获得背景
-   */
-  getBackground() {
-    // const group:any = new GlbLoader('https://minio.trvqd.com/meta/macao.glb');
-    const group:any = new GlbLoader('models/macao.glb');
-    group.addEventListener(LOAD_EVENT.LOADED, ()=> this.ready());
-    group.scale = new Vector3(2,2,2);
-    // const worldWidth = 512, worldDepth = 512;
-    // const geometry = new PlaneGeometry( 20000, 20000, worldWidth - 1, worldDepth - 1 );
-		// geometry.rotateX( - Math.PI / 2 );
-    // const position:any = geometry.attributes.position;
-    // group.wave = position;
-    // const texture = new TextureLoader().load( 'https://minio.trvqd.com/meta/water.jpg' );
-    // texture.wrapS = texture.wrapT = RepeatWrapping;
-    // texture.repeat.set( 10, 10 );
-		// const material = new MeshBasicMaterial( { color: 0x0044ff, map: texture } );
-		// group.add(new Mesh( geometry, material ));
-    return group;
   }
   getLights() {
     const group = new Group();
@@ -192,13 +179,15 @@ export class Platform extends EventDispatcher {
   cast(x:number, y:number) {
     this._raycaster.setFromCamera({x, y}, this.__camera);
     const intersects:any = this._raycaster.intersectObjects(this.__boothes.children, false);
+    let booth = null;
     if(intersects.length) {
-      const booth = intersects[0];
+      booth = intersects[0];
       const v = this._controls.object.position.clone();
       v.add(booth.position.clone().sub(this._controls.target));
       new Tween(this._controls.target).to( booth.position, Static.DURATION).easing(Easing.Quadratic.In).start();
       new Tween(this._controls.object.position).to( v, Static.DURATION).easing(Easing.Quadratic.In).start();
     }
+    return booth;
   }
   /**
    * 停止拖动

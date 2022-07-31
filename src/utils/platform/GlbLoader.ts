@@ -1,6 +1,7 @@
 import { Object3D, Raycaster, AnimationMixer, Mesh, Matrix4, Ray, FrontSide, BackSide } from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
+import { IModel } from "@/type/base";
 
 export const LOAD_EVENT = {
   LOADING: 'modelLoading',
@@ -10,15 +11,17 @@ export const LOAD_EVENT = {
 };
 export class GlbLoader extends Object3D {
   _loader:GLTFLoader; //加载器
-  constructor(url:string) {
+  _booth:any; // 展位信息
+  constructor(booth:IModel) {
     super();
+    this._booth = booth;
     const dracoLoader =new DRACOLoader();
     this._loader = new GLTFLoader();
     dracoLoader.setDecoderPath('./gltfdraco/');
     dracoLoader.setDecoderConfig({ type:'js'});
     dracoLoader.preload();
     this._loader.setDRACOLoader(dracoLoader);
-    this._loader.load(url, this.onLoad, this.onLoading, this.onLoadErrer);
+    this._loader.load(booth.url, this.onLoad, this.onLoading, this.onLoadErrer);
   }
   /**
    * 加载
@@ -68,6 +71,12 @@ export class GlbLoader extends Object3D {
     const event = { type: LOAD_EVENT.LOAD_FAIL, data: e };
     this.dispatchEvent(event);
   };
+  /**
+   * 获取详情
+   */
+  getContent() {
+    return this._booth.content;
+  }
   /**
    * 射线碰撞
    * @param ray 摄像头射线
