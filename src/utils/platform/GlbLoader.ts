@@ -83,6 +83,14 @@ export class GlbLoader extends Object3D {
     return this._booth.content;
   }
   /**
+   * 重置
+   */
+  reset = () => {
+    if(this._video) {
+      this._video.pause();
+    }
+  }
+  /**
    * 射线碰撞
    * @param ray 摄像头射线
    * @param arr 碰撞内容

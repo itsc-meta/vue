@@ -189,6 +189,10 @@ export class Platform extends EventDispatcher {
     const intersects:any = this._raycaster.intersectObjects(this.__boothes.children, false);
     let booth = null;
     if(intersects.length) {
+      for(const child of this.__boothes.children) {
+        const model = child as GlbLoader;
+        model.reset();
+      }
       booth = intersects[0];
       const v = this._controls.object.position.clone();
       v.add(booth.position.clone().sub(this._controls.target));
