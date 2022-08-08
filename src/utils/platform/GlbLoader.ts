@@ -85,9 +85,16 @@ export class GlbLoader extends Object3D {
   /**
    * 重置
    */
-  reset = () => {
-    if(this._video) {
+  pause = () => {
+    if(this._video && !this._video.paused) {
       this._video.pause();
+      console.log(2, this._video.paused);
+    }
+  }
+  play = () => {
+    if(this._video) {
+      this._video.play();
+      console.log(1, this._video.paused);
     }
   }
   /**
@@ -108,9 +115,6 @@ export class GlbLoader extends Object3D {
       if ( mesh.isMesh && mesh.geometry.boundingBox) {
         if(ray.intersectsBox(mesh.geometry.boundingBox)) {
           arr.push(this);
-          if(this._video) {
-            this._video.play();
-          }
           return;
         }
       }
