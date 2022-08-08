@@ -43,7 +43,7 @@ export class GlbLoader extends Object3D {
       if ( object.isMesh ) {
         object.castShadow = true;
         object.receiveShadow = true;
-        object.material.side = FrontSide;
+        // object.material.side = FrontSide;
         if(object.name === 'ping_mu001') {
           this._video = document.createElement('video');
           this._video.crossOrigin = 'anonymous';
@@ -52,10 +52,6 @@ export class GlbLoader extends Object3D {
           const material = new MeshBasicMaterial( { map: texture } );
           object.material = material;
         }
-      }
-      if ( object.isLight ) {
-        object.visible = false;
-        // object.castShadow = true;
       }
     });
     this.add(model);
@@ -102,15 +98,14 @@ export class GlbLoader extends Object3D {
     this.traverse( ( object ) => {
       const mesh:Mesh = object as Mesh;
       if ( mesh.isMesh && mesh.geometry.boundingBox) {
-        // console.log(mesh)
         if(ray.intersectsBox(mesh.geometry.boundingBox)) {
           arr.push(this);
+          if(this._video) {
+            this._video.play();
+          }
           return;
         }
       }
     });
-    if(this._video) {
-      this._video.play();
-    }
   };
 }

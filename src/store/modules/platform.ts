@@ -1,7 +1,7 @@
 import { Platform, EVENT } from '@/utils/platform'
 import { defineStore } from 'pinia';
 
-const platform = new Platform();
+// const platform = new Platform();
 /**
  * 模型平台页面
  */
@@ -10,7 +10,9 @@ const usePlatform = defineStore({
   state: () => ({
     loadingPercent: 0,
     content: '',
-    field: 0
+    instance: <{platform:Platform|undefined}>{
+      platform:undefined
+    }
   }),
   getters: {
     /**
@@ -38,9 +40,10 @@ const usePlatform = defineStore({
      * @param canvas 
      */
     freight(canvas:HTMLCanvasElement) {
-      platform.freight(canvas);
-      platform.addEventListener(EVENT.LOADING, this.onLoading);
-      platform.addEventListener(EVENT.LOADED, this.onLoaded);
+      this.instance.platform = new Platform();
+      this.instance.platform.freight(canvas);
+      this.instance.platform.addEventListener(EVENT.LOADING, this.onLoading);
+      this.instance.platform.addEventListener(EVENT.LOADED, this.onLoaded);
     },
     /**
      * 加载中
@@ -63,7 +66,7 @@ const usePlatform = defineStore({
      * @param y 纵坐标
      */
     cast(x:number, y:number) {
-      const booth = platform.cast(x, y);
+      const booth = this.instance.platform?.cast(x, y);
       if(booth) {
         this.content = booth.getContent();
       }
@@ -73,7 +76,7 @@ const usePlatform = defineStore({
      * @param id config id
      */
     start(id:string) {
-      platform.start(id);
+      this.instance.platform?.start(id);
     }
   }
 });

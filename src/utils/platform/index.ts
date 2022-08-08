@@ -1,7 +1,7 @@
 import {
   WebGLRenderer, EventDispatcher, PerspectiveCamera,TextureLoader, Scene, Event, Object3D, AnimationMixer,
   sRGBEncoding, PCFSoftShadowMap,
-  BackSide, Mesh, Group, Vector3, PointLight, AmbientLight, Color, DynamicDrawUsage, RepeatWrapping, Clock, FogExp2, MathUtils, Raycaster, PlaneGeometry, VideoTexture, MeshBasicMaterial
+  BackSide, Mesh, Group, Vector3, PointLight, AmbientLight, Color, DynamicDrawUsage, RepeatWrapping, Clock, FogExp2, MathUtils, Raycaster, PlaneGeometry, VideoTexture, MeshBasicMaterial, DirectionalLight
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import TWEEN, { Tween, Easing } from '@tweenjs/tween.js';
@@ -57,7 +57,7 @@ export class Platform extends EventDispatcher {
     this.__camera = new PerspectiveCamera(75, Static.WIDTH / Static.HEIGHT, 1, 10000);
     const light = new PointLight(0xffffff, 1);
     light.castShadow = true;
-    this.__camera.add(light);
+    // this.__camera.add(light);
     this._raycaster = new Raycaster();
     this.__bg = new Group();
     this.__boothes = new Group();
@@ -76,8 +76,8 @@ export class Platform extends EventDispatcher {
     this._canvas = canvas;
     this.__renderer = new WebGLRenderer({ canvas, antialias: true });
     this.__renderer.outputEncoding = sRGBEncoding;
-		this.__renderer.shadowMap.enabled = true;
-    this.__renderer.shadowMap.type = PCFSoftShadowMap;
+		// this.__renderer.shadowMap.enabled = true;
+    // this.__renderer.shadowMap.type = PCFSoftShadowMap;
     window.addEventListener('resize', this.onResize);
     this.onResize();
     this.animate(0);
@@ -163,10 +163,18 @@ export class Platform extends EventDispatcher {
   }
   getLights() {
     const group = new Group();
-    const sun = new PointLight(0xffffff);
+    // const sun = new PointLight(0xffffff);
+    const sun = new DirectionalLight(0xffffff, 0.8);
     sun.castShadow = true;
-    sun.position.set(0, 50, 0);
+    sun.shadow.mapSize.width = 2048;
+    sun.shadow.mapSize.height = 2048;
+    sun.shadow.camera.left = -180;
+    sun.shadow.camera.right = 180;
+    sun.shadow.camera.top = -180;
+    sun.shadow.camera.bottom = 180;
+    sun.position.set(50, 50, 0);
     group.add(
+      new AmbientLight(0xffffff, 0.6),
       sun
     );
     return group;
