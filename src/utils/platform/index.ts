@@ -1,11 +1,11 @@
 import {
-  WebGLRenderer, EventDispatcher, PerspectiveCamera,TextureLoader, Scene, Event, Object3D, AnimationMixer,
-  sRGBEncoding, PCFSoftShadowMap,
-  BackSide, Mesh, Group, Vector3, PointLight, AmbientLight, Color, DynamicDrawUsage, RepeatWrapping, Clock, FogExp2, MathUtils, Raycaster, PlaneGeometry, VideoTexture, MeshBasicMaterial, DirectionalLight
+  WebGLRenderer, EventDispatcher, Event, AnimationMixer,Color,Clock, FogExp2, MathUtils, Raycaster,
+  sRGBEncoding, PCFSoftShadowMap, BasicShadowMap, VSMShadowMap,
+  PointLight, AmbientLight, DirectionalLight,
+  Mesh, PerspectiveCamera, Scene, Group, Vector3, DynamicDrawUsage, RepeatWrapping, 
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import TWEEN, { Tween, Easing } from '@tweenjs/tween.js';
-import { IConfig } from '@/type/base';
 import { GlbLoader, LOAD_EVENT } from './GlbLoader';
 import axios from 'axios';
 
@@ -38,7 +38,6 @@ export class Platform extends EventDispatcher {
   _canvas:any = null;
   __camera:PerspectiveCamera; // 摄像头
   __scene:Scene; // 场景
-  // __obj; //
   __bg:Group; //背景
   __boothes:Group; // 展位
   __renderer:any = null; // 渲染器
@@ -55,8 +54,8 @@ export class Platform extends EventDispatcher {
     this.__scene.background = new Color(0xaaccff);
     this.__scene.fog = new FogExp2( 0xaaccff, 0.0007 );
     this.__camera = new PerspectiveCamera(75, Static.WIDTH / Static.HEIGHT, 1, 10000);
-    const light = new PointLight(0xffffff, 1);
-    light.castShadow = true;
+    // const light = new PointLight(0xffffff, 1);
+    // light.castShadow = true;
     // this.__camera.add(light);
     this._raycaster = new Raycaster();
     this.__bg = new Group();
@@ -76,11 +75,23 @@ export class Platform extends EventDispatcher {
     this._canvas = canvas;
     this.__renderer = new WebGLRenderer({ canvas, antialias: true });
     this.__renderer.outputEncoding = sRGBEncoding;
-		// this.__renderer.shadowMap.enabled = true;
-    // this.__renderer.shadowMap.type = PCFSoftShadowMap;
+		this.__renderer.shadowMap.enabled = true;
+    this.__renderer.shadowMap.type = VSMShadowMap;
     window.addEventListener('resize', this.onResize);
     this.onResize();
     this.animate(0);
+  }
+  /**
+   * 获取阴影效果状态
+   */
+  getShadowStatus() {
+    return this.__renderer.shadowMap.enabled;
+  }
+  /**
+   * 切换影子效果
+   */
+  toggleShadow() {
+    this.__renderer.shadowMap.enabled = !this.__renderer.shadowMap.enabled;
   }
   /**
    * 尺寸重置
@@ -135,7 +146,9 @@ export class Platform extends EventDispatcher {
   boothInit(){
     this.__boothes.clear();
     this._controls = new OrbitControls(this.__camera, this.__renderer.domElement); // 拖动摄像机
-    this._controls.maxPolarAngle = MathUtils.degToRad(85);
+    this._controls.maxPolarAngle = MathUtils.degToRad(85); //最大转动角85度
+    this._controls.maxDistance = 300; // 最大摄像头距离500
+    this._controls.minDistance = 10; // 最小摄像头距离10
     for(const booth of this._config.boothes) {
       const g = new GlbLoader(booth);
       g.addEventListener(LOAD_EVENT.ANIMATION, e => {

@@ -1,4 +1,4 @@
-import { Object3D, Raycaster, AnimationMixer, Mesh, Matrix4, Ray, FrontSide, BackSide, MeshBasicMaterial, VideoTexture } from "three";
+import { Object3D, Raycaster, AnimationMixer, Mesh, Matrix4, Ray, FrontSide, BackSide, MeshBasicMaterial, VideoTexture, BoxGeometry } from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { IModel } from "@/type/base";
@@ -23,12 +23,19 @@ export class GlbLoader extends Object3D {
     dracoLoader.preload();
     this._loader.setDRACOLoader(dracoLoader);
     this._loader.load(booth.url, this.onLoad, this.onLoading, this.onLoadErrer);
+    this.add(
+      new Mesh(
+        new BoxGeometry(4,4,4).translate(0,2,0),
+        new MeshBasicMaterial({color:0xff0000, wireframe:true})
+      )
+    );
   }
   /**
    * 加载
    * @param gltf glb模型
    */
   onLoad = (gltf:any) => {
+    this.clear();
     const model = gltf.scene;
     const animations = gltf.animations;
     if(animations.length > 0) {
@@ -43,7 +50,7 @@ export class GlbLoader extends Object3D {
       if ( object.isMesh ) {
         object.castShadow = true;
         object.receiveShadow = true;
-        // object.material.side = FrontSide;
+        object.material.side = FrontSide;
         if(object.name === 'ping_mu001') {
           this._video = document.createElement('video');
           this._video.crossOrigin = 'anonymous';
