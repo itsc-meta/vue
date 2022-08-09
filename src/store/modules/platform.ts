@@ -9,6 +9,7 @@ const usePlatform = defineStore({
   id: 'platform',
   state: () => ({
     loadingPercent: 0,
+    loaded: false,
     content: '',
     instance: <{platform:Platform|undefined}>{
       platform:undefined
@@ -19,13 +20,13 @@ const usePlatform = defineStore({
      * 是否加载
      */
     isLoading():boolean {
-      return this.loadingPercent !== 1;
+      return !this.loaded;
     },
     /**
      * 加载信息
      */
     loadingMsg():string {
-      return `loading:${Math.floor(this.loadingPercent * 1000) / 10}%`;    
+      return this.loadingPercent == 1?'模型解压中' : `loading:${Math.floor(this.loadingPercent * 1000) / 10}%`;    
     },
     /**
      * 展位介绍
@@ -58,7 +59,7 @@ const usePlatform = defineStore({
      * @param e 
      */
     onLoaded(e:any) {
-      this.loadingPercent = 1;
+      this.loaded = true;
     },
     /**
      * 投射射线，用于点击检测
