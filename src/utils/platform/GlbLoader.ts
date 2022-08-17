@@ -86,8 +86,8 @@ export class GlbLoader extends Object3D {
   /**
    * 获取详情
    */
-  getContent() {
-    return this._booth.content;
+  getInfo() {
+    return this._booth;
   }
   /**
    * 重置

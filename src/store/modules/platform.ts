@@ -1,3 +1,4 @@
+import { IModel } from '@/type/base';
 import { Platform, EVENT } from '@/utils/platform'
 import { defineStore } from 'pinia';
 
@@ -10,7 +11,8 @@ const usePlatform = defineStore({
   state: () => ({
     loadingPercent: 0,
     loaded: false,
-    content: '',
+    info: <IModel>({}),
+    fold: false,
     instance: <{platform:Platform|undefined}>{
       platform:undefined
     }
@@ -29,10 +31,16 @@ const usePlatform = defineStore({
       return this.loadingPercent == 1?'模型解压中' : `loading:${Math.floor(this.loadingPercent * 1000) / 10}%`;    
     },
     /**
+     * 是否折叠
+     */
+    isFold():boolean {
+      return this.fold;
+    },
+    /**
      * 展位介绍
      */
-    boothContent():string {
-      return this.content;
+    boothInfo():IModel {
+      return this.info;
     }
   },
   actions: {
@@ -69,8 +77,14 @@ const usePlatform = defineStore({
     cast(x:number, y:number) {
       const booth = this.instance.platform?.cast(x, y);
       if(booth) {
-        this.content = booth.getContent();
+        this.info = booth.getInfo();
       }
+    },
+    /**
+     * 切换折叠状态
+     */
+    toggleFold() {
+      this.fold = !this.fold;
     },
     /**
      * 根据config开始
