@@ -12,6 +12,8 @@ interface Window {
 }
 
 interface Window {
-  _hmt: any;
+  ethereum: any;
+  web3: any;
 }
 
+// declare module '@truffle/contract' 

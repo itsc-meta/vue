@@ -4,39 +4,4 @@ body {
   overflow: hidden;
 }
 
-.bg-list {
-  position: fixed;
-  top: 1em;
-  width: 100%;
-  padding: 1em;
-  li {
-    display: inline-block;
-    border: solid rgba($color: #000000, $alpha: 0.5) 2px;
-    margin-right: 1em;
-    padding: 0.2em;
-    color: #FFF;
-    &.active {
-      border: solid #FFF 2px;
-    }
-  }
-}
-.model-list {
-  position: fixed;
-  bottom: 1em;
-  width: 100%;
-  padding: 1em;
-  li {
-    display: inline-block;
-    border: solid rgba($color: #000000, $alpha: 0.5) 2px;
-    margin-right: 1em;
-    height: 2em;
-    color: #FFF;
-    &.active {
-      border: solid #FFF 2px;
-    }
-    img {
-      width: 2em;
-      height: 2em;
-    }
-  }
-}
+@import 'platform';

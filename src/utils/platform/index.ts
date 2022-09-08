@@ -6,8 +6,9 @@ import {
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import TWEEN, { Tween, Easing } from '@tweenjs/tween.js';
-import { GlbLoader, LOAD_EVENT } from './GlbLoader';
+import { GlbLoader, LOAD_EVENT } from './glb-loader';
 import axios from 'axios';
+// import { EthVisitor } from './eth-visitor';
 
 /**
  * 版本
@@ -81,6 +82,10 @@ export class Platform extends EventDispatcher {
     this.onResize();
     this.animate(0);
   }
+  dao = async () => {
+    // const visitor = new EthVisitor();
+    // await visitor.init();
+  }
   /**
    * 获取阴影效果状态
    */
@@ -105,10 +110,12 @@ export class Platform extends EventDispatcher {
     }
     Static.WIDTH = window.innerWidth;
     Static.HEIGHT = window.innerHeight;
+    
     if(this.__camera) {
       this.__camera.aspect = Static.WIDTH / Static.HEIGHT;
       this.__camera.updateProjectionMatrix();
       this.__renderer.setSize( Static.WIDTH, Static.HEIGHT );
+      this.__renderer.setPixelRatio(window.devicePixelRatio);
     }
   }
   /**
