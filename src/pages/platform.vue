@@ -1,6 +1,6 @@
 <template>
   <div class="platform">
-    <div v-if="isLoading" class="msg">{{loadingMsg}}</div>
+    <loading-surface v-if="isLoading" class="msg">{{loadingMsg}}</loading-surface>
     <canvas ref="canvas" width="500" height="500" style="width:100%" @click="onCast"></canvas>
     <div v-if="!isLoading" class="dialog">
       <section class="dialog-content" :class="{fold}">
@@ -26,6 +26,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import LoadingSurface from '@/components/loading-surface.vue';
 import { usePlatform } from '@/store';
 import { computed, onMounted, ref, watch } from 'vue';
 const props = defineProps({

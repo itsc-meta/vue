@@ -1,5 +1,6 @@
 import { IModel } from '@/type/base';
 import { Platform, EVENT } from '@/utils/platform'
+import { EthVisitor } from '@/utils/platform/eth-visitor';
 import { defineStore } from 'pinia';
 
 // const platform = new Platform();
@@ -13,8 +14,9 @@ const usePlatform = defineStore({
     loaded: false,
     info: <IModel>({}),
     fold: false,
-    instance: <{platform:Platform|undefined}>{
-      platform:undefined
+    instance: <{platform:Platform|undefined, dao:any}>{
+      platform:undefined,
+      dao:undefined
     }
   }),
   getters: {
@@ -44,6 +46,9 @@ const usePlatform = defineStore({
     }
   },
   actions: {
+    daoInit() {
+      this.instance.dao = new EthVisitor();
+    },
     /**
      * 装载canvas
      * @param canvas 

@@ -1,6 +1,5 @@
 .platform {
   .msg {
-    background-color: white;
     position: fixed;
   }
   .dialog {
@@ -11,7 +10,7 @@
       max-width: 550px;
       min-width: 300px;
       max-height: 270px;
-      margin-right: 300px;
+      margin-right: 100px;
       margin-bottom: 10px;
       display: flex;
       flex-direction: column;
@@ -69,9 +68,10 @@
     }
     .dialog-secretary {
       position: absolute;
+      pointer-events: none;
       bottom: 0;
       right: 0;
-      width: 300px;
+      width: 100px;
       img {
         width: 100%;
       }

@@ -238,6 +238,5 @@ package-lock.json
 
 *.tar.gz
 
-public/contracts
 
 docs/

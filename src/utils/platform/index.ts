@@ -138,6 +138,7 @@ export class Platform extends EventDispatcher {
    */
   start(id:string) {
     this.onResize(); // 必须重新定位，否则高度不正确
+    // axios.get(`a.json`)
     axios.get(`https://minio.trvqd.com/meta/${id}.json`)
     .then((response) => {
       this._config = response.data;
