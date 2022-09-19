@@ -124,7 +124,11 @@ export class Platform extends EventDispatcher {
   ready() {
     this.__camera.position.set(0, 200, 0);
     this.__camera.lookAt(new Vector3(0,0,0));
-    const t = new Tween(this.__camera.position).to(new Vector3(0,40,40), Static.DURATION);
+    const v = new Vector3();
+    v.x = this._config.base.x;
+    v.y = this._config.base.y;
+    v.z = this._config.base.z;
+    const t = new Tween(this.__camera.position).to(v, Static.DURATION);
     t.onUpdate((e) => {
       this.__camera.lookAt(new Vector3(0,0,0));
     });
@@ -136,17 +140,10 @@ export class Platform extends EventDispatcher {
   /**
    * 开始
    */
-  start(id:string) {
+  start(config:any) {
     this.onResize(); // 必须重新定位，否则高度不正确
-    // axios.get(`a.json`)
-    axios.get(`https://minio.trvqd.com/meta/${id}.json`)
-    .then((response) => {
-      this._config = response.data;
-      this.setBackground();
-    })
-    .catch((error) => {
-      console.log(error);
-    }); 
+    this._config = config;
+    this.setBackground();
   }
   /**
    * 展位初始化

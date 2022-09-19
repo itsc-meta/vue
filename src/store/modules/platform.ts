@@ -2,6 +2,7 @@ import { IModel } from '@/type/base';
 import { Platform, EVENT } from '@/utils/platform'
 import { EthVisitor } from '@/utils/platform/eth-visitor';
 import { defineStore } from 'pinia';
+import axios from 'axios';
 
 // const platform = new Platform();
 /**
@@ -12,6 +13,7 @@ const usePlatform = defineStore({
   state: () => ({
     loadingPercent: 0,
     loaded: false,
+    errorMsg: '',
     info: <IModel>({}),
     fold: false,
     instance: <{platform:Platform|undefined, dao:any}>{
@@ -96,7 +98,14 @@ const usePlatform = defineStore({
      * @param id config id
      */
     start(id:string) {
-      this.instance.platform?.start(id);
+      axios.get(`https://minio.trvqd.com/meta/${id}.json`)
+      .then((response) => {
+        this.instance.platform?.start(response.data);
+        this.info = response.data.base;
+      })
+      .catch((error) => {
+        this.errorMsg = error;
+      }); 
     }
   }
 });
