@@ -9,9 +9,9 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@truffle/contract": "^4.5.23",
     "@tweenjs/tween.js": "^18.6.4",
     "axios": "^0.27.2",
+    "ethers": "^5.7.1",
     "pinia": "^2.0.13",
     "three": "^0.139.2",
     "vant": "^3.4.8",
@@ -26,7 +26,6 @@
     "sass-loader": "^12.6.0",
     "typescript": "^4.6.3",
     "vite": "^2.9.5",
-    "vite-plugin-require-transform": "^1.0.3",
     "vue-tsc": "^0.31.4"
   }
 }

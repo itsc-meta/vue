@@ -1,9 +1,10 @@
-import Web3 from 'web3';
+// import Web3 from 'web3/dist/web3.min.js';
+import {ethers} from 'ethers';
+// import Web3 from 'web3';
 import axios from 'axios';
 // import {contract} from './contract.js';
 // const contract = import.meta.glob("@truffle/contract", { import: 'setup', eager: true });
 // const contract = require("@truffle/contract");
-
 
 export class EthVisitor {
   // block chain
@@ -11,26 +12,23 @@ export class EthVisitor {
   contracts:any = {};
 
   constructor() {
-
+    this.init();
   }
   init = async() => {
-    if (window.ethereum) {// Modern dapp browsers...
-      this.web3Provider = window.ethereum;
-      try {
-        // Request account access
-        await window.ethereum.enable();
-      } catch (error) {
-        // User denied account access...
-        console.error("User denied account access")
-      }
-    } else if (window.web3) { // Legacy dapp browsers...
-      this.web3Provider = window.web3.currentProvider;
-    } else { // If no injected web3 instance is detected, fall back to Ganache
-      // this.web3Provider = new Web3.providers.HttpProvider('http://localhost:7545');
-    }
-    // const web3 = new Web3(this.web3Provider);
-
-    this.contract();
+    // A Web3Provider wraps a standard Web3 provider, which is
+    // what MetaMask injects as window.ethereum into each page
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    const signer = provider.getSigner();
+    const network = await provider.getNetwork();
+    console.log(network);
+    const tokenJson = await import('@/contracts/Visitor.json');
+    console.log(tokenJson);
+    // const contract = new ethers.Contract(
+    //   network.name,
+    //   tokenJson,
+    //   provider
+    // )
   }
   contract = async() => {
     axios.get('contracts/visitor.json').then(({data}) => {

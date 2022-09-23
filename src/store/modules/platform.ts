@@ -16,9 +16,9 @@ const usePlatform = defineStore({
     errorMsg: '',
     info: <IModel>({}),
     fold: false,
-    instance: <{platform:Platform|undefined, dao:any}>{
+    instance: <{platform:Platform|undefined, visitor:EthVisitor|undefined}>{
       platform:undefined,
-      dao:undefined
+      visitor:undefined
     }
   }),
   getters: {
@@ -48,9 +48,6 @@ const usePlatform = defineStore({
     }
   },
   actions: {
-    daoInit() {
-      this.instance.dao = new EthVisitor();
-    },
     /**
      * 装载canvas
      * @param canvas 
@@ -60,6 +57,7 @@ const usePlatform = defineStore({
       this.instance.platform.freight(canvas);
       this.instance.platform.addEventListener(EVENT.LOADING, this.onLoading);
       this.instance.platform.addEventListener(EVENT.LOADED, this.onLoaded);
+      this.instance.visitor = new EthVisitor()
     },
     /**
      * 加载中
