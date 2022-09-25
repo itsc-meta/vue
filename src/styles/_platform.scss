@@ -19,9 +19,6 @@
       overflow: hidden;
       background-color: #FFFFFF;
       &.fold {
-        header {
-          height: 53px;
-        }
         article {
           display: none;
         }
@@ -32,7 +29,6 @@
       header {
         font-size: 25px;
         min-width: 200px;
-        height: 47px;
         background-color: #2B7E58;
         text-align: center;
         position: relative;
@@ -83,8 +79,14 @@
     .dialog {
       &-content {
         width: 60vw;
-        margin-right: 30vw;
-        margin-bottom: 0;
+        margin-right: 25vw;
+        margin-bottom: 1rem;
+        article {
+          margin: 1rem
+        }
+        footer {
+          padding-bottom: 1rem;
+        }
       }
       .dialog-secretary {
         width: 30vw;
