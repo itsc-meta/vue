@@ -19,7 +19,8 @@ export class EthVisitor {
     // what MetaMask injects as window.ethereum into each page
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
-    const signer = provider.getSigner();
+    const signer = await provider.getSigner();
+    console.log(signer);
     const network = await provider.getNetwork();
     console.log(network);
     const tokenJson = await import('@/contracts/Visitor.json');

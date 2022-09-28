@@ -165,6 +165,24 @@ export class Platform extends EventDispatcher {
       g.rotateY(MathUtils.degToRad(booth.degree));
       this.__boothes.add(g);
     }
+    this.journalInit();
+  }
+  /**
+   * 期刊初始化
+   */
+  journalInit() {
+    const glb = this._config.journals.url;
+    for(const journal of this._config.journals.list) {
+      const image = journal.url;
+      journal.url = glb;
+      const g = new GlbLoader(journal);
+      g.setImage(image);
+      g.position.x = journal.x;
+      g.position.y = journal.z;
+      g.position.z = journal.y;
+      g.rotateY(MathUtils.degToRad(journal.degree));
+      this.__boothes.add(g);
+    }
   }
   setBackground() {
     const group:any = new GlbLoader(this._config.bg);

@@ -1,4 +1,4 @@
-import { Object3D, Raycaster, AnimationMixer, Mesh, Matrix4, Ray, FrontSide, BackSide, MeshBasicMaterial, VideoTexture, BoxGeometry } from "three";
+import { Object3D, Raycaster, AnimationMixer, Mesh, Matrix4, Ray, FrontSide, BackSide, MeshBasicMaterial, VideoTexture, BoxGeometry, Texture, TextureLoader } from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { IModel } from "@/type/base";
@@ -13,6 +13,7 @@ export class GlbLoader extends Object3D {
   _loader:GLTFLoader; //加载器
   _booth:any; // 展位信息
   _video:HTMLVideoElement|undefined = undefined;
+  _image:string|undefined = undefined;
   constructor(booth:IModel) {
     super();
     this._booth = booth;
@@ -59,12 +60,19 @@ export class GlbLoader extends Object3D {
           const material = new MeshBasicMaterial( { map: texture } );
           object.material = material;
         }
+        if(this._image && object.material.name === 'fengmian') {
+          object.material.map = new TextureLoader().load(this._image);
+          object.material.needsUpdate = true;
+        }
       }
     });
     this.add(model);
     const event = { type: LOAD_EVENT.LOADED, data: gltf };
     this.dispatchEvent(event);  
   };
+  setImage(url:string) {
+    this._image = url;
+  }
   /**
    * 加载中
    * @param e 加载过程事件
