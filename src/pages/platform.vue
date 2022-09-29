@@ -14,9 +14,9 @@
         <article>
           <p>{{boothInfo.content}}</p>
         </article>
-        <footer>
-          <img class="operation" src="@/assets/images/website.png" />
-          <img class="operation" src="@/assets/images/zoom.png" />
+        <footer v-if="boothInfo.site || boothInfo.zoom">
+          <a v-if="boothInfo.site" :href="boothInfo.site" target="_blank"><img class="operation" src="@/assets/images/website.png" /></a>
+          <a v-if="boothInfo.zoom" :href="boothInfo.zoom" target="_blank"><img class="operation" src="@/assets/images/zoom.png" /></a>
         </footer>
       </section>
       <div class="dialog-secretary">

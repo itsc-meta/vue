@@ -13,19 +13,27 @@ export enum MODEL_STATUS {
  * 模型
  */
 export interface IModel {
-  name: string,
-  content: string,
-  url: string,
-  x: number,
+  name: string, // 名称
+  content: string, // 内容
+  url: string, // 模型地址
+  image?: string, // 图片
+  site?: string, // 官网
+  zoom?: string, // zoom
+  x: number, // 坐标
   y: number,
   z: number,
-  degree?: number
+  degree?: number // 角度
 }
 
 /**
  * 配置
  */
 export interface IConfig {
-  bg: IModel,
-  boothes: IModel[]
+  bg: IModel, // 背景
+  base: IModel, // 默认位置
+  journals: { // 期刊
+    url: string,
+    list: IModel[]
+  },
+  boothes: IModel[] // 展位
 }
