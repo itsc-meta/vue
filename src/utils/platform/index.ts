@@ -234,8 +234,9 @@ export class Platform extends EventDispatcher {
           model.pause();
         }
       }
-      const v = this._controls.object.position.clone();
-      v.add(booth.position.clone().sub(this._controls.target));
+      // const v = this._controls.object.position.clone();
+      // v.add(booth.position.clone().sub(this._controls.target));
+      const v = booth.getCemeraPosition();
       new Tween(this._controls.target).to( booth.position, Static.DURATION).easing(Easing.Quadratic.In).start();
       new Tween(this._controls.object.position).to( v, Static.DURATION).easing(Easing.Quadratic.In).start();
     }

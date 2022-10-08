@@ -1,4 +1,4 @@
-import { Object3D, Raycaster, AnimationMixer, Mesh, Matrix4, Ray, FrontSide, BackSide, MeshBasicMaterial, VideoTexture, BoxGeometry, Texture, TextureLoader } from "three";
+import { Object3D, Raycaster, AnimationMixer, Mesh, Matrix4, Ray, FrontSide, BackSide, MeshBasicMaterial, VideoTexture, BoxGeometry, Texture, TextureLoader, Vector3 } from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { IModel } from "@/type/base";
@@ -12,6 +12,7 @@ export const LOAD_EVENT = {
 export class GlbLoader extends Object3D {
   _loader:GLTFLoader; //加载器
   _booth:any; // 展位信息
+  _model:Object3D|undefined = undefined; // 模型
   _video:HTMLVideoElement|undefined = undefined;
   _image:string|undefined = undefined;
   constructor(booth:IModel) {
@@ -38,6 +39,7 @@ export class GlbLoader extends Object3D {
   onLoad = (gltf:any) => {
     this.clear();
     const model = gltf.scene;
+    this._model = model;
     const animations = gltf.animations;
     if(animations.length > 0) {
       const mixer = new AnimationMixer( model );
@@ -96,6 +98,13 @@ export class GlbLoader extends Object3D {
    */
   getInfo() {
     return this._booth;
+  }
+  /**
+   * 获取摄像机位置
+   */
+  getCemeraPosition():Vector3 {
+    const v = this._model ? this._model.localToWorld(new Vector3(0, 20, 20)) : new Vector3(0,20,20);
+    return v;
   }
   /**
    * 重置
